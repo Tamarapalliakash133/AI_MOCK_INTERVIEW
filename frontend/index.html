@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterviewAI — Auth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#090d13;--surface:#0f1318;--surface2:#161b22;--border:rgba(255,255,255,0.07);
+  --border-hi:rgba(82,166,255,0.45);--text:#dde3ed;--muted:#5a6478;
+  --red:#f87171;--green:#4ade80;--yellow:#fbbf24;
+  --accent:#52a6ff;--green:#4ade80;--red:#f87171;
+  --radius:14px;--head:'Syne',sans-serif;--body:'DM Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow-y:auto;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(82,166,255,0.025)1px,transparent 1px),linear-gradient(90deg,rgba(82,166,255,0.025)1px,transparent 1px);background-size:56px 56px;pointer-events:none}
+.glow{position:fixed;border-radius:50%;pointer-events:none}
+.glow-1{width:700px;height:700px;background:radial-gradient(circle,rgba(82,166,255,0.07)0%,transparent 65%);top:-280px;right:-200px}
+.glow-2{width:500px;height:500px;background:radial-gradient(circle,rgba(74,222,128,0.05)0%,transparent 65%);bottom:-200px;left:-150px}
+.card{position:relative;z-index:1;width:100%;max-width:430px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px 40px 40px;box-shadow:0 24px 80px rgba(0,0,0,0.5);animation:cardIn .5s cubic-bezier(.16,1,.3,1) both;margin:24px auto}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#52a6ff,#4ade80);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-family:var(--head);font-size:1.1rem;font-weight:700;letter-spacing:-.02em}
+.logo-text span{color:var(--accent)}
+h1{font-family:var(--head);font-size:1.7rem;font-weight:800;letter-spacing:-.03em;margin-bottom:5px;line-height:1.2}
+.sub{color:var(--muted);font-size:.88rem;font-weight:300;margin-bottom:28px}
+.tabs{display:flex;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:26px;gap:4px}
+.tab{flex:1;padding:9px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-family:var(--body);font-size:.875rem;font-weight:500;cursor:pointer;transition:all .2s}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.4)}
+.panel{display:none}.panel.active{display:block;animation:fadeUp .3s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.field{margin-bottom:15px}
+label{display:block;font-size:.75rem;font-weight:500;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+.iw{position:relative}
+.iw .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none;line-height:1}
+input[type=text],input[type=email],input[type=password],input[type=tel]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 13px 12px 38px;color:var(--text);font-family:var(--body);font-size:.9rem;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus{border-color:var(--border-hi);box-shadow:0 0 0 3px rgba(82,166,255,0.08)}
+input::placeholder{color:#2d3545}
+.eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0;line-height:1}
+.forgot{display:block;text-align:right;font-size:.78rem;color:var(--accent);cursor:pointer;margin-top:-6px;margin-bottom:18px;transition:opacity .2s}
+.forgot:hover{opacity:.7}
+.btn{width:100%;padding:13px;border:none;border-radius:10px;font-family:var(--head);font-size:.93rem;font-weight:700;letter-spacing:.02em;cursor:pointer;transition:all .2s}
+.btn-p{background:linear-gradient(135deg,#3b82f6,#52a6ff);color:#fff;box-shadow:0 4px 20px rgba(82,166,255,0.25)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(82,166,255,0.35)}
+.btn-p:active{transform:none}.btn-p:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:.85rem;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.4);transition:transform .35s cubic-bezier(.16,1,.3,1);z-index:999;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}.toast.ok{border-color:rgba(74,222,128,.3)}.toast.err{border-color:rgba(248,113,113,.3)}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}.toast.ok .dot{background:var(--green)}.toast.err .dot{background:var(--red)}
+/* forgot flow */
+.steps{display:flex;gap:5px;margin-bottom:20px}
+.step{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .3s}
+.step.done{background:var(--green)}.step.on{background:var(--accent)}
+.slabel{font-size:.73rem;color:var(--muted);margin-bottom:18px;letter-spacing:.03em}
+.slabel span{color:var(--accent)}
+.back{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:.8rem;cursor:pointer;margin-bottom:18px;transition:color .2s;background:none;border:none;font-family:var(--body);padding:0}
+.back:hover{color:var(--text)}
+.otp-row{display:flex;gap:7px}
+.otp-row input{flex:1;text-align:center;padding:14px 4px;font-size:1.25rem;font-weight:700}
+.resend-row{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:.78rem;color:var(--muted)}
+#resend-btn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:.78rem;font-family:var(--body);padding:0}
+#resend-btn:disabled{color:var(--muted);cursor:default}
+.success-icon{width:54px;height:54px;border-radius:50%;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 14px;animation:pop .4s cubic-bezier(.175,.885,.32,1.275) both}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🎙</div>
+    <div class="logo-text">Interview<span>AI</span></div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="auth-sec">
+    <h1 id="auth-h1">Welcome back</h1>
+    <p class="sub">Sign in or create your account</p>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div class="panel active" id="p-login">
+      <div class="field"><label>Username</label>
+        <div class="iw"><span class="ico">👤</span><input type="text" id="l-user" placeholder="your_username" autocomplete="username"></div></div>
+      <div class="field"><label>Password</label>
+        <div class="iw"><span class="ico">🔒</span><input type="password" id="l-pw" placeholder="••••••••" autocomplete="current-password"><button class="eye" onclick="togglePw('l-pw',this)">👁</button></div></div>
+      <span class="forgot" onclick="showForgot()">Forgot password?</span>
+      <button class="btn btn-p" id="login-btn" onclick="doLogin()">Sign In</button>
+    </div>
+
+    <div class="panel" id="p-reg">
+      <div class="field"><label>Username</label>
+        <div class="iw"><span class="ico">👤</span><input type="text" id="r-user" placeholder="choose_username" autocomplete="username"></div></div>
+      <div class="field"><label>Email</label>
+        <div class="iw"><span class="ico">✉️</span><input type="email" id="r-email" placeholder="you@example.com"></div></div>
+      <div class="field"><label>Phone <span style="color:var(--muted);font-size:.7rem;text-transform:none">(for OTP recovery)</span></label>
+        <div class="iw"><span class="ico">📱</span><input type="tel" id="r-phone" placeholder="+91 9876543210"></div></div>
+      <div class="field"><label>Password</label>
+        <div class="iw"><span class="ico">🔒</span><input type="password" id="r-pw" placeholder="min 8 characters"><button class="eye" onclick="togglePw('r-pw',this)">👁</button></div></div>
+      <button class="btn btn-p" id="reg-btn" onclick="doRegister()">Create Account</button>
+    </div>
+  </div>
+
+  <!-- FORGOT -->
+  <div id="forgot-sec" style="display:none">
+    <button class="back" onclick="showAuth()">← Back to sign in</button>
+
+    <div id="f1">
+      <div class="steps"><div class="step on"></div><div class="step"></div><div class="step"></div></div>
+      <p class="slabel">Step <span>1</span> of 3 — Phone number</p>
+      <h1>Reset password</h1><p class="sub" style="margin-bottom:22px">We'll SMS a 6-digit code</p>
+      <div class="field"><label>Phone Number</label>
+        <div class="iw"><span class="ico">📱</span><input type="tel" id="fp-phone" placeholder="+91 9876543210"></div></div>
+      <button class="btn btn-p" id="otp-btn" onclick="doSendOTP()">Send OTP</button>
+    </div>
+
+    <div id="f2" style="display:none">
+      <div class="steps"><div class="step done"></div><div class="step on"></div><div class="step"></div></div>
+      <p class="slabel">Step <span>2</span> of 3 — Verify OTP</p>
+      <h1>Enter code</h1><p class="sub" style="margin-bottom:22px">Sent to <span id="masked" style="color:var(--accent)"></span></p>
+      <div class="field"><label>6-digit OTP</label>
+        <div class="otp-row">
+          <input type="text" maxlength="1" class="od" oninput="otpNext(this,0)">
+          <input type="text" maxlength="1" class="od" oninput="otpNext(this,1)">
+          <input type="text" maxlength="1" class="od" oninput="otpNext(this,2)">
+          <input type="text" maxlength="1" class="od" oninput="otpNext(this,3)">
+          <input type="text" maxlength="1" class="od" oninput="otpNext(this,4)">
+          <input type="text" maxlength="1" class="od" oninput="otpNext(this,5)">
+        </div></div>
+      <div class="resend-row"><span id="cd"></span><button id="resend-btn" disabled onclick="doSendOTP(true)">Resend</button></div>
+      <button class="btn btn-p" style="margin-top:14px" onclick="doVerifyStep()">Verify OTP</button>
+    </div>
+
+    <div id="f3" style="display:none">
+      <div class="steps"><div class="step done"></div><div class="step done"></div><div class="step on"></div></div>
+      <p class="slabel">Step <span>3</span> of 3 — New password</p>
+      <h1>New password</h1><p class="sub" style="margin-bottom:22px">Choose a strong password</p>
+      <div class="field"><label>New Password</label>
+        <div class="iw"><span class="ico">🔒</span><input type="password" id="fp-np" placeholder="min 8 characters"><button class="eye" onclick="togglePw('fp-np',this)">👁</button></div></div>
+      <div class="field"><label>Confirm Password</label>
+        <div class="iw"><span class="ico">🔒</span><input type="password" id="fp-cp" placeholder="repeat password"></div></div>
+      <button class="btn btn-p" id="reset-btn" onclick="doReset()">Reset Password</button>
+    </div>
+
+    <div id="f-ok" style="display:none;text-align:center;padding:20px 0">
+      <div class="success-icon">✅</div>
+      <h1 style="font-size:1.35rem;margin-bottom:7px">Password reset!</h1>
+      <p class="sub">Your password has been updated.</p>
+      <button class="btn btn-p" style="margin-top:14px" onclick="showAuth()">Sign In Now</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="dot"></div><span id="tmsg"></span></div>
+
+<script>
+const API='http://localhost:8000';
+let sPhone='',sOTP='',cdTimer;
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1)));
+  document.getElementById('p-login').classList.toggle('active',t==='login');
+  document.getElementById('p-reg').classList.toggle('active',t==='register');
+  document.getElementById('auth-h1').textContent=t==='login'?'Welcome back':'Create account';
+}
+function showForgot(){document.getElementById('auth-sec').style.display='none';document.getElementById('forgot-sec').style.display='block';}
+function showAuth(){document.getElementById('auth-sec').style.display='block';document.getElementById('forgot-sec').style.display='none';resetF();}
+function resetF(){['f1','f2','f3','f-ok'].forEach((id,i)=>document.getElementById(id).style.display=i===0?'block':'none');document.getElementById('fp-phone').value='';document.querySelectorAll('.od').forEach(d=>d.value='');document.getElementById('fp-np').value='';document.getElementById('fp-cp').value='';}
+function togglePw(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
+function otpNext(el,idx){el.value=el.value.replace(/\D/g,'');const ds=document.querySelectorAll('.od');if(el.value&&idx<5)ds[idx+1].focus();}
+function getOTP(){return[...document.querySelectorAll('.od')].map(d=>d.value).join('');}
+function toast(msg,type='ok'){const t=document.getElementById('toast');t.className='toast '+type;document.getElementById('tmsg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+function setBtn(id,loading,label=''){const b=document.getElementById(id);if(loading){b.disabled=true;b.innerHTML='<span class="spin"></span>Loading...';}else{b.disabled=false;b.textContent=label;}}
+
+async function doLogin(){
+  const u=document.getElementById('l-user').value.trim(),p=document.getElementById('l-pw').value;
+  if(!u||!p)return toast('Fill in all fields','err');
+  setBtn('login-btn',true);
+  try{
+    const r=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'Login failed');
+    localStorage.setItem('token',d.token);localStorage.setItem('username',d.username);localStorage.setItem('user_id',d.user_id);
+    toast('Signed in! Redirecting…');
+    setTimeout(()=>location.href='dashboard.html',1000);
+  }catch(e){toast(e.message,'err');}
+  finally{setBtn('login-btn',false,'Sign In');}
+}
+
+async function doRegister(){
+  const u=document.getElementById('r-user').value.trim(),e=document.getElementById('r-email').value.trim(),ph=document.getElementById('r-phone').value.trim(),p=document.getElementById('r-pw').value;
+  if(!u||!e||!p)return toast('Fill required fields','err');
+  if(p.length<8)return toast('Password min 8 characters','err');
+  setBtn('reg-btn',true);
+  try{
+    const r=await fetch(`${API}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:e,password:p,phone:ph||null})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'Registration failed');
+    toast('Account created! Sign in now.');switchTab('login');
+  }catch(e){toast(e.message,'err');}
+  finally{setBtn('reg-btn',false,'Create Account');}
+}
+
+async function doSendOTP(resend=false){
+  const ph=document.getElementById('fp-phone').value.trim();
+  if(!ph)return toast('Enter your phone number','err');
+  sPhone=ph;setBtn('otp-btn',true);
+  try{
+    const r=await fetch(`${API}/auth/forgot-password/send-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:ph})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'Failed to send OTP');
+    toast('OTP sent!');
+    document.getElementById('f1').style.display='none';document.getElementById('f2').style.display='block';
+    document.getElementById('masked').textContent=ph.replace(/(\+?\d{2,3})\d+(\d{4})/,'$1****$2');
+    startCD(60);
+  }catch(e){toast(e.message,'err');}
+  finally{setBtn('otp-btn',false,'Send OTP');}
+}
+
+function startCD(s){clearInterval(cdTimer);document.getElementById('resend-btn').disabled=true;const el=document.getElementById('cd');let t=s;el.textContent=`Resend in ${t}s`;cdTimer=setInterval(()=>{t--;if(t<=0){clearInterval(cdTimer);el.textContent='';document.getElementById('resend-btn').disabled=false;}else el.textContent=`Resend in ${t}s`;},1000);}
+
+function doVerifyStep(){sOTP=getOTP();if(sOTP.length<6)return toast('Enter full 6-digit OTP','err');document.getElementById('f2').style.display='none';document.getElementById('f3').style.display='block';}
+
+async function doReset(){
+  const np=document.getElementById('fp-np').value,cp=document.getElementById('fp-cp').value;
+  if(np.length<8)return toast('Password min 8 characters','err');
+  if(np!==cp)return toast('Passwords do not match','err');
+  setBtn('reset-btn',true);
+  try{
+    const r=await fetch(`${API}/auth/forgot-password/verify-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:sPhone,otp_code:sOTP,new_password:np})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'Reset failed');
+    document.getElementById('f3').style.display='none';document.getElementById('f-ok').style.display='block';
+  }catch(e){toast(e.message,'err');document.getElementById('f3').style.display='none';document.getElementById('f2').style.display='block';}
+  finally{setBtn('reset-btn',false,'Reset Password');}
+}
+
+// redirect if already logged in
+if(localStorage.getItem('token')) location.href='dashboard.html';
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const as=document.getElementById('auth-sec'),fs=document.getElementById('forgot-sec');
+  if(as.style.display!=='none'){document.getElementById('p-login').classList.contains('active')?doLogin():doRegister();}
+  else if(document.getElementById('f1').style.display!=='none')doSendOTP();
+  else if(document.getElementById('f2').style.display!=='none')doVerifyStep();
+  else if(document.getElementById('f3').style.display!=='none')doReset();
+});
+</script>
+</body>
+</html>

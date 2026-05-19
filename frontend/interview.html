@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterviewAI — Live Interview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#090d13;--surface:#0f1318;--surface2:#161b22;--surface3:#1c2230;
+  --border:rgba(255,255,255,0.07);--border-hi:rgba(82,166,255,0.45);--text:#dde3ed;--muted:#5a6478;
+  --accent:#52a6ff;--green:#4ade80;--red:#f87171;--yellow:#fbbf24;
+  --head:'Syne',sans-serif;--body:'DM Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* header bar */
+.bar{height:56px;background:rgba(9,13,19,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;z-index:10}
+.bar-left{display:flex;align-items:center;gap:14px}
+.bar-logo{font-family:var(--head);font-size:.95rem;font-weight:700;display:flex;align-items:center;gap:7px}
+.bar-logo .li{width:26px;height:26px;background:linear-gradient(135deg,#52a6ff,#4ade80);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.bar-logo span{color:var(--accent)}
+.session-info{font-size:.78rem;color:var(--muted)}
+.session-info strong{color:var(--text);font-weight:500}
+.bar-right{display:flex;align-items:center;gap:10px}
+.timer{font-family:var(--head);font-size:.9rem;font-weight:700;color:var(--yellow);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);padding:5px 12px;border-radius:8px;letter-spacing:.05em}
+.q-count{font-size:.78rem;color:var(--muted)}
+
+/* main layout */
+.room{flex:1;display:grid;grid-template-columns:1fr 360px;height:calc(100vh - 56px);overflow:hidden}
+@media(max-width:900px){.room{grid-template-columns:1fr;grid-template-rows:1fr auto}}
+
+/* video side */
+.video-side{position:relative;background:#000;display:flex;flex-direction:column}
+.video-side-inner{position:relative;flex:1;overflow:hidden;min-height:0}
+#user-video{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
+.video-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:20px;z-index:5;pointer-events:none}
+.video-overlay>*{pointer-events:auto}
+.ai-status{display:flex;align-items:center;gap:8px;background:rgba(9,13,19,.7);backdrop-filter:blur(8px);padding:9px 14px;border-radius:10px;border:1px solid var(--border);width:fit-content}
+.ai-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#52a6ff,#4ade80);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ai-info{display:flex;flex-direction:column;gap:1px}
+.ai-name{font-size:.8rem;font-weight:600;font-family:var(--head)}
+.ai-state{font-size:.7rem;color:var(--muted)}
+.ai-state.speaking{color:var(--green)}
+.sound-wave{display:flex;align-items:center;gap:2px;margin-left:4px}
+.wave-bar{width:3px;border-radius:2px;background:var(--green);animation:wave 1s ease-in-out infinite;transform-origin:bottom}
+.wave-bar:nth-child(2){animation-delay:.1s;height:8px}.wave-bar:nth-child(3){animation-delay:.2s;height:14px}.wave-bar:nth-child(4){animation-delay:.15s;height:10px}.wave-bar:nth-child(5){animation-delay:.05s;height:6px}
+@keyframes wave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.wave-bar.off{animation:none;transform:scaleY(.4)}
+
+/* controls */
+.controls{display:flex;align-items:center;justify-content:center;gap:16px;background:var(--surface2);border-top:1px solid var(--border);padding:14px 20px;flex-shrink:0;z-index:10}
+.ctrl-btn{width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:20px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.ctrl-btn:hover{background:var(--surface3);border-color:var(--border-hi)}
+.ctrl-btn.muted,.ctrl-btn.vid-off{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.3);color:var(--red)}
+.end-btn{padding:10px 22px;border-radius:24px;border:none;background:linear-gradient(135deg,#ef4444,#f87171);color:#fff;font-family:var(--head);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.02em}
+.end-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(248,113,113,.3)}
+.end-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* no-camera fallback */
+.no-cam{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface2);gap:12px;z-index:1}
+.no-cam .avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#2563eb);display:flex;align-items:center;justify-content:center;font-size:36px}
+.no-cam p{font-size:.85rem;color:var(--muted)}
+.video-side-inner{position:relative;width:100%;height:100%;overflow:hidden}
+
+/* chat side */
+.chat-side{border-left:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface);overflow:hidden}
+.chat-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.chat-header h3{font-family:var(--head);font-size:.9rem;font-weight:700;margin-bottom:2px}
+.chat-header p{font-size:.73rem;color:var(--muted)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.chat-messages::-webkit-scrollbar{width:4px}.chat-messages::-webkit-scrollbar-track{background:transparent}.chat-messages::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
+.msg{display:flex;flex-direction:column;gap:4px;animation:msgIn .3s ease both}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg-role{font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.msg.ai .msg-role{color:var(--accent)}.msg.user .msg-role{color:var(--muted)}
+.msg-bubble{padding:12px 14px;border-radius:12px;font-size:.85rem;line-height:1.55;max-width:100%}
+.msg.ai .msg-bubble{background:rgba(82,166,255,.08);border:1px solid rgba(82,166,255,.15);border-top-left-radius:4px}
+.msg.user .msg-bubble{background:var(--surface2);border:1px solid var(--border);border-top-right-radius:4px;align-self:flex-end}
+.msg.score .msg-bubble{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15);font-size:.8rem;color:var(--muted)}
+.msg.score .msg-role{color:var(--green)}
+/* typing indicator */
+.typing{display:flex;align-items:center;gap:4px;padding:10px 14px;background:rgba(82,166,255,.06);border:1px solid rgba(82,166,255,.12);border-radius:12px;border-top-left-radius:4px;width:fit-content}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bounce .8s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:scale(.8);opacity:.5}40%{transform:scale(1.2);opacity:1}}
+/* input area */
+.chat-input{padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.input-area{display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:var(--body);font-size:.85rem;outline:none;resize:none;height:44px;max-height:120px;overflow-y:auto;transition:border-color .2s,box-shadow .2s;line-height:1.5}
+textarea:focus{border-color:var(--border-hi);box-shadow:0 0 0 3px rgba(82,166,255,.07)}
+textarea::placeholder{color:#2d3545}
+.mic-btn{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mic-btn.recording{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.4);animation:pulse .8s ease-in-out infinite}
+.mic-btn:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(1)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.3)}50%{box-shadow:0 0 0 6px rgba(248,113,113,0)}}
+.send-btn{width:44px;height:44px;border-radius:10px;border:none;background:linear-gradient(135deg,#3b82f6,#52a6ff);color:#fff;font-size:16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.send-btn:hover{transform:translateY(-1px)}.send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.hint{font-size:.7rem;color:var(--muted);margin-top:6px;text-align:center}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(9,13,19,.85);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:36px;max-width:380px;width:90%;text-align:center}
+.modal h2{font-family:var(--head);font-size:1.3rem;font-weight:800;margin-bottom:10px}
+.modal p{color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:24px}
+.modal-btns{display:flex;gap:10px}
+.modal-btn{flex:1;padding:12px;border-radius:10px;font-family:var(--head);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s}
+.modal-btn.cancel{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+.modal-btn.confirm{background:linear-gradient(135deg,#ef4444,#f87171);border:none;color:#fff}
+.modal-btn:hover{opacity:.85}
+
+/* toast */
+.toast{position:fixed;top:72px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:.82rem;display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:all .3s;z-index:300;transform:translateX(120%)}
+.toast.show{transform:translateX(0)}.toast.ok{border-color:rgba(74,222,128,.3)}.toast.err{border-color:rgba(248,113,113,.3)}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}.toast.ok .dot{background:var(--green)}.toast.err .dot{background:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- Header bar -->
+<div class="bar">
+  <div class="bar-left">
+    <div class="bar-logo"><div class="li">🎙</div>Interview<span>AI</span></div>
+    <div class="session-info">
+      <strong id="bar-role">—</strong> · <span id="bar-level">—</span>
+    </div>
+  </div>
+  <div class="bar-right">
+    <span class="q-count">Q <span id="q-num">1</span></span>
+    <div class="timer" id="timer">00:00</div>
+    <button class="end-btn" id="end-call-btn" onclick="confirmEnd()">End Call</button>
+  </div>
+</div>
+
+<!-- Room -->
+<div class="room">
+  <!-- Video -->
+  <div class="video-side">
+    <div class="video-side-inner">
+      <video id="user-video" autoplay muted playsinline></video>
+      <div id="no-cam" class="no-cam" style="display:none">
+        <div class="avatar">👤</div>
+        <p>Camera not available</p>
+      </div>
+      <div class="video-overlay">
+        <div class="ai-status">
+          <div class="ai-avatar">🤖</div>
+          <div class="ai-info">
+            <span class="ai-name">AI Interviewer</span>
+            <span class="ai-state" id="ai-state">Ready</span>
+          </div>
+          <div class="sound-wave" id="sound-wave" style="display:none">
+            <div class="wave-bar" style="height:5px"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar" style="height:5px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="mic-ctrl" onclick="toggleMic()" title="Toggle mic">🎙</button>
+      <button class="ctrl-btn" id="vid-ctrl" onclick="toggleVid()" title="Toggle video">📷</button>
+      <button class="end-btn" onclick="confirmEnd()">End Call</button>
+    </div>
+  </div>
+
+  <!-- Chat -->
+  <div class="chat-side">
+    <div class="chat-header">
+      <h3>Interview Session</h3>
+      <p id="chat-sub">AI is asking questions. Answer via mic or type below.</p>
+    </div>
+    <div class="chat-messages" id="chat-msgs"></div>
+    <div class="chat-input">
+      <div class="input-area">
+        <textarea id="answer-input" placeholder="Type your answer…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="mic-btn" id="mic-rec" onclick="toggleRecording()" title="Voice input">🎙</button>
+        <button class="send-btn" id="send-btn" onclick="sendAnswer()" title="Send answer">➤</button>
+      </div>
+      <p class="hint">Press Enter to send · Shift+Enter for new line · 🎙 for voice</p>
+    </div>
+  </div>
+</div>
+
+<!-- End call modal -->
+<div class="modal-bg" id="end-modal" style="display:none">
+  <div class="modal">
+    <h2>End Interview?</h2>
+    <p>This will end the session and generate your performance report. Are you sure?</p>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModal()">Continue</button>
+      <button class="modal-btn confirm" id="confirm-end-btn" onclick="endInterview()">End & Get Report</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="dot"></div><span id="tmsg"></span></div>
+
+<script>
+const API='http://localhost:8000';
+const token=localStorage.getItem('token');
+const interviewId=parseInt(localStorage.getItem('interview_id'));
+const firstQuestion=localStorage.getItem('first_question');
+const role=localStorage.getItem('interview_role');
+const level=localStorage.getItem('interview_level');
+const apiKey=localStorage.getItem('api_key');
+
+if(!token||!interviewId){location.href='dashboard.html';}
+
+document.getElementById('bar-role').textContent=role||'Interview';
+document.getElementById('bar-level').textContent=level||'';
+
+let stream=null,micOn=true,vidOn=true,recording=false,recognition=null;
+let qCount=1,timerInterval=null,timerSec=0,awaitingAnswer=false;
+
+function authHdr(){return{'Content-Type':'application/json','Authorization':'Bearer '+token};}
+function toast(msg,type='ok'){const t=document.getElementById('toast');t.className='toast '+type;document.getElementById('tmsg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer(){timerInterval=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=`${m}:${s}`;},1000);}
+
+// ── Camera/Mic ────────────────────────────────────────────────────────────────
+async function initMedia(){
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    const vid=document.getElementById('user-video');
+    vid.srcObject=stream;
+    vid.style.display='block';
+    document.getElementById('no-cam').style.display='none';
+  }catch(e){
+    document.getElementById('user-video').style.display='none';
+    document.getElementById('no-cam').style.display='flex';
+    // Disable hardware mic/video toggles since there's no stream
+    document.getElementById('mic-ctrl').disabled=true;
+    document.getElementById('mic-ctrl').style.opacity='0.4';
+    document.getElementById('vid-ctrl').disabled=true;
+    document.getElementById('vid-ctrl').style.opacity='0.4';
+    toast('Camera/mic not available — type your answers below','err');
+  }
+}
+function toggleMic(){
+  if(!stream)return;
+  micOn=!micOn;
+  stream.getAudioTracks().forEach(t=>t.enabled=micOn);
+  const btn=document.getElementById('mic-ctrl');
+  btn.textContent=micOn?'🎙':'🔇';
+  btn.classList.toggle('muted',!micOn);
+}
+function toggleVid(){
+  if(!stream)return;
+  vidOn=!vidOn;
+  stream.getVideoTracks().forEach(t=>t.enabled=vidOn);
+  const btn=document.getElementById('vid-ctrl');
+  btn.textContent=vidOn?'📷':'📵';
+  btn.classList.toggle('vid-off',!vidOn);
+  document.getElementById('user-video').style.opacity=vidOn?'1':'0.3';
+}
+
+// ── Chat helpers ──────────────────────────────────────────────────────────────
+function addMsg(role,text,cls=''){
+  const c=document.getElementById('chat-msgs');
+  const d=document.createElement('div');
+  d.className=`msg ${cls||role}`;
+  d.innerHTML=`<span class="msg-role">${role==='ai'?'AI Interviewer':role==='score'?'Evaluation':'You'}</span><div class="msg-bubble">${text}</div>`;
+  c.appendChild(d);
+  // Scroll after the browser has painted the new element (fixes the "stuck" scroll)
+  requestAnimationFrame(()=>{ c.scrollTop=c.scrollHeight; });
+  return d;
+}
+function scrollChat(){
+  const c=document.getElementById('chat-msgs');
+  requestAnimationFrame(()=>{ c.scrollTop=c.scrollHeight; });
+}
+function showTyping(){
+  const c=document.getElementById('chat-msgs');
+  const d=document.createElement('div');
+  d.id='typing-indicator';
+  d.className='msg ai';
+  d.innerHTML='<span class="msg-role">AI Interviewer</span><div class="typing"><span></span><span></span><span></span></div>';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('typing-indicator');if(t)t.remove();}
+
+// ── TTS ───────────────────────────────────────────────────────────────────────
+let isSpeaking = false;
+let _speakTimer = null;
+
+function _stopSpeaking(){
+  isSpeaking = false;
+  if(_speakTimer){ clearTimeout(_speakTimer); _speakTimer=null; }
+  const aiState=document.getElementById('ai-state');
+  const sw=document.getElementById('sound-wave');
+  aiState.textContent='Listening…'; aiState.className='ai-state'; sw.style.display='none';
+}
+
+function speak(text){
+  if(!('speechSynthesis' in window))return;
+  window.speechSynthesis.cancel();
+  if(_speakTimer){ clearTimeout(_speakTimer); _speakTimer=null; }
+
+  const utt=new SpeechSynthesisUtterance(text);
+  utt.rate=1.0; utt.pitch=1;
+  const aiState=document.getElementById('ai-state');
+  const sw=document.getElementById('sound-wave');
+
+  isSpeaking = true;
+
+  // Chrome bug: onend sometimes never fires — force-reset after estimated duration
+  const words = text.trim().split(/\s+/).length;
+  const safeMs = Math.min(Math.max((words / 2.5) * 1000 + 2000, 3000), 50000);
+  _speakTimer = setTimeout(_stopSpeaking, safeMs);
+
+  utt.onstart = ()=>{ aiState.textContent='Speaking…'; aiState.className='ai-state speaking'; sw.style.display='flex'; };
+  utt.onend   = _stopSpeaking;
+  utt.onerror = _stopSpeaking;
+  window.speechSynthesis.speak(utt);
+}
+
+// ── STT ───────────────────────────────────────────────────────────────────────
+let _sttSendPending = false; // guard: only one auto-send per recording session
+
+function toggleRecording(){
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+      return toast('Speech not supported in this browser','err');
+  }
+
+  if(recording){
+      recognition.stop();
+      return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+
+  // continuous=true so a brief pause doesn't cut the transcript early
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  const btn = document.getElementById('mic-rec');
+  const input = document.getElementById('answer-input');
+  _sttSendPending = false;
+
+  recognition.onstart = ()=>{
+      recording=true;
+      _sttSendPending=false;
+      btn.classList.add('recording');
+      btn.textContent='⏹';
+      toast('Listening… click ⏹ when done');
+  };
+
+  recognition.onresult = (e)=>{
+      // Build transcript from all results so far
+      let interim='', final='';
+      for(let i=0;i<e.results.length;i++){
+        if(e.results[i].isFinal) final+=e.results[i][0].transcript+' ';
+        else interim+=e.results[i][0].transcript;
+      }
+      input.value=(final+interim).trim();
+      autoResize(input);
+  };
+
+  recognition.onend=()=>{
+      recording=false;
+      btn.classList.remove('recording');
+      btn.textContent='🎙';
+      const text=input.value.trim();
+      // Only auto-send if user stopped recording intentionally (not on every micro-pause)
+      // and nothing is already being sent
+      if(text && !_sttSendPending && !awaitingAnswer){
+        _sttSendPending=true;
+        // Small delay so user can see what was transcribed before it sends
+        setTimeout(()=>{ _sttSendPending=false; sendAnswer(); }, 600);
+      }
+  };
+
+  recognition.onerror=(e)=>{
+      // 'no-speech' is not a real error — just silence; don't show error toast for it
+      if(e.error !== 'no-speech'){
+        toast('Voice error: '+e.error,'err');
+      }
+      recording=false;
+      btn.classList.remove('recording');
+      btn.textContent='🎙';
+  };
+
+  recognition.start();
+}
+// ── Send answer ───────────────────────────────────────────────────────────────
+async function sendAnswer(){
+  if(awaitingAnswer)return;
+  const input=document.getElementById('answer-input');
+  const answer=input.value.trim();
+  if(!answer)return toast('Please provide an answer','err');
+
+  // If AI is still speaking, cut it off immediately — don't wait
+  if(isSpeaking){
+    window.speechSynthesis.cancel();
+    _stopSpeaking();
+  }
+
+  awaitingAnswer=true;
+  document.getElementById('send-btn').disabled=true;
+  input.value=''; autoResize(input);
+  addMsg('user',answer);
+  showTyping();
+  document.getElementById('ai-state').textContent='Thinking…';
+
+  try{
+    const r=await fetch(`${API}/interview/answer`,{method:'POST',headers:authHdr(),body:JSON.stringify({interview_id:interviewId,answer,api_key:apiKey})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'Error');
+    removeTyping();
+
+    if(d.score!=null){
+      const stars='⭐'.repeat(Math.round(d.score/2));
+      addMsg('score',`Score: ${d.score}/10 ${stars}<br><em>${d.feedback||''}</em>`,'score');
+    }
+
+    qCount++; document.getElementById('q-num').textContent=qCount;
+    addMsg('ai',d.next_question);
+    speak(d.next_question);
+  }catch(e){ removeTyping(); toast(e.message,'err'); }
+  finally{
+    awaitingAnswer=false;
+    document.getElementById('send-btn').disabled=false;
+  }
+}
+
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAnswer();}}
+function autoResize(el){el.style.height='44px';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+
+// ── End call ──────────────────────────────────────────────────────────────────
+function confirmEnd(){document.getElementById('end-modal').style.display='flex';}
+function closeModal(){document.getElementById('end-modal').style.display='none';}
+
+async function endInterview(){
+  const btn=document.getElementById('confirm-end-btn');
+  btn.disabled=true;btn.textContent='Generating report…';
+  try{
+    const r=await fetch(`${API}/interview/end`,{method:'POST',headers:authHdr(),body:JSON.stringify({interview_id:interviewId,api_key:apiKey})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'Failed to end');
+    clearInterval(timerInterval);
+    if(stream)stream.getTracks().forEach(t=>t.stop());
+    localStorage.setItem('report_interview_id',interviewId);
+    location.href='report.html';
+  }catch(e){toast(e.message,'err');btn.disabled=false;btn.textContent='End & Get Report';}
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(async()=>{
+  // Check speech recognition support and show mic button state
+  const micRecBtn = document.getElementById('mic-rec');
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+    micRecBtn.disabled = true;
+    micRecBtn.title = 'Voice input not supported in this browser (use Chrome)';
+    micRecBtn.textContent = '🚫';
+  }
+
+  await initMedia();
+  startTimer();
+  if(firstQuestion){
+    addMsg('ai',firstQuestion);
+    speak(firstQuestion);
+  }
+  document.getElementById('ai-state').textContent='Listening…';
+})();
+</script>
+</body>
+</html>
