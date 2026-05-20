@@ -2,5 +2,6 @@ services:
   - type: web
     name: interviewai
     runtime: python
+    rootDir: .
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT

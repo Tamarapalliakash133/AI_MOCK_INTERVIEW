@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 import os
-DB_PATH = os.path.join(os.path.dirname(__file__), "fastapi-pratice.db")
+DB_PATH = os.environ.get("DB_PATH", "/tmp/fastapi-pratice.db")
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(
