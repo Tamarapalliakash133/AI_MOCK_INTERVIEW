@@ -21,7 +21,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(interview_router)
 
-# Serve frontend static files
+
 frontend_path = os.path.join(os.path.dirname(__file__), "frontend")
 
 if os.path.exists(frontend_path):

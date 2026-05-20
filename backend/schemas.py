@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 
 
-# ── Auth ──────────────────────────────────────────────────────────────────────
+
 class UserCreate(BaseModel):
     username: str
     email: str
@@ -30,7 +30,7 @@ class VerifyOTPSchema(BaseModel):
     new_password: str
 
 
-# ── Interview ─────────────────────────────────────────────────────────────────
+
 class StartInterviewSchema(BaseModel):
     role: str
     level: str
@@ -46,7 +46,6 @@ class EndInterviewSchema(BaseModel):
     api_key: str
 
 
-# ── Response ─────────────────────────────────────────────────────────────────
 class ResponseOut(BaseModel):
     id: int
     question: str
