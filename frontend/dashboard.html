@@ -36,19 +36,19 @@ main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24p
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px}
 .card-title{font-family:var(--head);font-size:.95rem;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
 .card-title .badge{width:28px;height:28px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:13px}
-/* role grid */
+
 .role-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .role-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 12px;cursor:pointer;transition:all .2s;text-align:center}
 .role-card:hover{border-color:var(--border-hi);background:var(--surface3)}
 .role-card.selected{border-color:var(--accent);background:rgba(82,166,255,.08);box-shadow:0 0 0 1px rgba(82,166,255,.2)}
 .role-card .ri{font-size:22px;margin-bottom:6px}
 .role-card .rn{font-size:.8rem;font-weight:500;color:var(--text)}
-/* level */
+
 .level-row{display:flex;gap:10px}
 .level-btn{flex:1;padding:12px 8px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--body);font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
 .level-btn:hover{border-color:var(--border-hi);color:var(--text)}
 .level-btn.selected{border-color:var(--green);background:rgba(74,222,128,.08);color:var(--green)}
-/* api key */
+
 .api-key-wrap{position:relative}
 .api-key-wrap input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 40px 12px 14px;color:var(--text);font-family:monospace;font-size:.82rem;outline:none;transition:border-color .2s,box-shadow .2s}
 .api-key-wrap input:focus{border-color:var(--border-hi);box-shadow:0 0 0 3px rgba(82,166,255,.08)}
@@ -106,7 +106,7 @@ main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24p
   </div>
 
   <div class="setup-grid">
-    <!-- Role selection -->
+    
     <div class="card">
       <div class="card-title"><span class="badge">1</span> Select Role</div>
       <div class="role-grid" id="role-grid">
@@ -143,7 +143,7 @@ main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24p
     <span class="sico">🎙</span> Start Mock Interview
   </button>
 
-  <!-- History -->
+
   <div style="margin-top:48px">
     <div class="section-title">📋 Interview History</div>
     <div id="history-container">
@@ -155,10 +155,10 @@ main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24p
 <div class="toast" id="toast"><div class="dot"></div><span id="tmsg"></span></div>
 
 <script>
-const API='http://localhost:8000';
+const API='https://your-fastapi-app.onrender.com';
 let selectedRole='',selectedLevel='';
 
-// auth guard
+
 const token=localStorage.getItem('token');
 const username=localStorage.getItem('username');
 if(!token){location.href='index.html';}
