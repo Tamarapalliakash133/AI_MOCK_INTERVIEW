@@ -10,7 +10,7 @@ from backend.schemas import (
 )
 from typing import List
 
-# ── Auth Router ───────────────────────────────────────────────────────────────
+
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @auth_router.post("/register", response_model=UserDisplay)
@@ -35,7 +35,6 @@ def me(request: Request, db: Session = Depends(get_db)):
     return {"id": user.id, "username": user.username, "email": user.email}
 
 
-# ── Interview Router ──────────────────────────────────────────────────────────
 interview_router = APIRouter(prefix="/interview", tags=["Interview"])
 
 @interview_router.post("/start")

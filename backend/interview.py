@@ -20,10 +20,10 @@ def submit_answer(db: Session, req: AnswerSchema, user_id: int):
     if interview.status == "ended":
         raise HTTPException(status_code=400, detail="Interview already ended")
 
-    # get last unanswered question (stored in session via last response with no answer)
+   
     responses = db.query(Response).filter(Response.interview_id == req.interview_id).order_by(Response.id.desc()).all()
 
-    # find the pending question (last one with no answer)
+
     pending = None
     for r in responses:
         if r.answer is None:
@@ -33,24 +33,24 @@ def submit_answer(db: Session, req: AnswerSchema, user_id: int):
     if not pending:
         raise HTTPException(status_code=400, detail="No pending question")
 
-    # evaluate answer
+   
     eval_result = evaluate_answer(pending.question, req.answer, interview.role, interview.level, req.api_key)
     pending.answer   = req.answer
     pending.score    = eval_result.get("score", 5.0)
     pending.feedback = eval_result.get("feedback", "")
     db.commit()
 
-    # build history for next question
+   
     all_resp = db.query(Response).filter(
         Response.interview_id == req.interview_id,
         Response.answer.isnot(None)
     ).all()
     history = [{"question": r.question, "answer": r.answer, "score": r.score} for r in all_resp]
 
-    # generate next question
+ 
     next_q = generate_next_question(interview.role, interview.level, history, req.api_key)
 
-    # store next question as pending
+   
     db.add(Response(interview_id=req.interview_id, question=next_q, answer=None))
     db.commit()
 
