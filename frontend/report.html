@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InterviewAI — Dashboard</title>
+<title>InterviewAI — Interview Report</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
@@ -15,7 +15,7 @@
 }
 body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(37,99,235,0.03)1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,0.03)1px,transparent 1px);background-size:56px 56px;pointer-events:none;z-index:0}
-/* nav */
+
 nav{position:sticky;top:0;z-index:100;background:rgba(240,244,249,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:60px}
 .nav-logo{display:flex;align-items:center;gap:9px;font-family:var(--head);font-weight:700;font-size:1rem;letter-spacing:-.02em}
 .nav-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,#52a6ff,#4ade80);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
@@ -25,69 +25,87 @@ nav{position:sticky;top:0;z-index:100;background:rgba(240,244,249,.92);backdrop-
 .nav-user span{color:var(--text);font-weight:500}
 .btn-sm{padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--body);font-size:.82rem;cursor:pointer;transition:all .2s}
 .btn-sm:hover{background:var(--surface3)}
-/* main */
-main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24px 80px}
-.page-header{margin-bottom:40px}
+.btn-accent{padding:7px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-family:var(--body);font-size:.82rem;cursor:pointer;transition:all .2s}
+.btn-accent:hover{opacity:.88}
+
+main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:40px 24px 80px}
+
+.page-header{margin-bottom:36px}
 .page-header h1{font-family:var(--head);font-size:2rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
 .page-header p{color:var(--muted);font-size:.92rem;font-weight:300}
-/* grid */
-.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px}
-@media(max-width:680px){.setup-grid{grid-template-columns:1fr}}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px}
-.card-title{font-family:var(--head);font-size:.95rem;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
-.card-title .badge{width:28px;height:28px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:13px}
-/* role grid */
-.role-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.role-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 12px;cursor:pointer;transition:all .2s;text-align:center}
-.role-card:hover{border-color:var(--border-hi);background:var(--surface3)}
-.role-card.selected{border-color:var(--accent);background:rgba(37,99,235,.06);box-shadow:0 0 0 1px rgba(37,99,235,.15)}
-.role-card .ri{font-size:22px;margin-bottom:6px}
-.role-card .rn{font-size:.8rem;font-weight:500;color:var(--text)}
-/* level */
-.level-row{display:flex;gap:10px}
-.level-btn{flex:1;padding:12px 8px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--body);font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
-.level-btn:hover{border-color:var(--border-hi);color:var(--text)}
-.level-btn.selected{border-color:var(--green);background:rgba(22,163,74,.06);color:var(--green)}
-/* api key */
-.api-key-wrap{position:relative}
-.api-key-wrap input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 40px 12px 14px;color:var(--text);font-family:monospace;font-size:.82rem;outline:none;transition:border-color .2s,box-shadow .2s}
-.api-key-wrap input:focus{border-color:var(--border-hi);box-shadow:0 0 0 3px rgba(37,99,235,.06)}
-.api-key-wrap input::placeholder{color:#b0bac9;font-family:var(--body)}
-.eye2{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0}
-.api-note{font-size:.75rem;color:var(--muted);margin-top:8px;line-height:1.5}
-.api-note a{color:var(--accent);text-decoration:none}
-/* start btn */
-.start-btn{width:100%;padding:16px;border:none;border-radius:12px;font-family:var(--head);font-size:1rem;font-weight:800;letter-spacing:.02em;cursor:pointer;background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;box-shadow:0 4px 20px rgba(37,99,235,.25);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px}
-.start-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(37,99,235,.35)}
-.start-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.start-btn .sico{font-size:18px}
-/* section */
-.section-title{font-family:var(--head);font-size:1.05rem;font-weight:700;letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-/* history */
-.history-list{display:flex;flex-direction:column;gap:12px}
-.hist-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;cursor:pointer}
-.hist-card:hover{border-color:var(--border-hi)}
-.hist-left{display:flex;align-items:center;gap:14px}
-.hist-icon{width:40px;height:40px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.hist-info .role{font-weight:500;font-size:.9rem;margin-bottom:3px}
-.hist-info .meta{font-size:.78rem;color:var(--muted)}
-.hist-right{display:flex;align-items:center;gap:12px}
-.score-badge{padding:4px 10px;border-radius:20px;font-size:.78rem;font-weight:700}
-.score-badge.high{background:rgba(22,163,74,.08);color:var(--green);border:1px solid rgba(22,163,74,.2)}
-.score-badge.mid{background:rgba(217,119,6,.08);color:var(--yellow);border:1px solid rgba(217,119,6,.2)}
-.score-badge.low{background:rgba(220,38,38,.08);color:var(--red);border:1px solid rgba(220,38,38,.2)}
-.status-dot{width:7px;height:7px;border-radius:50%}
-.status-dot.ended{background:var(--green)}.status-dot.active{background:var(--yellow)}
-.empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
-.empty-state .ei{font-size:40px;margin-bottom:12px}
-.empty-state p{font-size:.9rem}
+
+/* Score Hero */
+.score-hero{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;margin-bottom:24px;display:flex;align-items:center;gap:32px;flex-wrap:wrap}
+.overall-circle{width:120px;height:120px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:conic-gradient(var(--accent) calc(var(--pct)*1%),var(--surface3) 0);position:relative;flex-shrink:0}
+.overall-circle::before{content:'';position:absolute;width:90px;height:90px;border-radius:50%;background:var(--surface)}
+.overall-inner{position:relative;z-index:1;text-align:center}
+.overall-num{font-family:var(--head);font-size:1.6rem;font-weight:800;color:var(--text)}
+.overall-label{font-size:.65rem;color:var(--muted);font-weight:500;letter-spacing:.05em;text-transform:uppercase}
+.score-meta{flex:1;min-width:200px}
+.score-meta h2{font-family:var(--head);font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.score-meta .role-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:rgba(37,99,235,.07);color:var(--accent);font-size:.78rem;font-weight:600;border:1px solid rgba(37,99,235,.15);margin-bottom:12px}
+.score-meta .date-tag{font-size:.78rem;color:var(--muted)}
+.sub-scores{display:flex;gap:24px;margin-top:16px;flex-wrap:wrap}
+.sub-score{display:flex;flex-direction:column;gap:4px}
+.sub-score-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.sub-score-val{font-family:var(--head);font-size:1.1rem;font-weight:700}
+.sub-score-bar{height:4px;border-radius:2px;background:var(--surface3);width:80px;overflow:hidden;margin-top:2px}
+.sub-score-bar-fill{height:100%;border-radius:2px;background:var(--accent)}
+
+/* Cards grid */
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+@media(max-width:640px){.cards-grid{grid-template-columns:1fr}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px}
+.card-title{font-family:var(--head);font-size:.88rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.card-title .ico{font-size:16px}
+
+.bullet-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.bullet-list li{display:flex;gap:10px;font-size:.87rem;line-height:1.5;align-items:flex-start}
+.bullet-list li::before{content:'';width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.strengths-list li::before{background:var(--green)}
+.weaknesses-list li::before{background:var(--red)}
+.recs-list li::before{background:var(--accent)}
+
+.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
+.summary-text{font-size:.9rem;line-height:1.7;color:var(--text)}
+
+/* Q&A transcript */
+.qa-section{margin-top:8px}
+.qa-title{font-family:var(--head);font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.qa-list{display:flex;flex-direction:column;gap:16px}
+.qa-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.qa-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .15s}
+.qa-header:hover{background:var(--surface2)}
+.qa-header-left{display:flex;align-items:center;gap:10px}
+.qa-num{width:26px;height:26px;border-radius:7px;background:rgba(37,99,235,.08);color:var(--accent);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--head)}
+.qa-q-preview{font-size:.85rem;font-weight:500;max-width:500px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qa-score-chip{padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:700;flex-shrink:0}
+.qa-score-chip.high{background:rgba(22,163,74,.08);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+.qa-score-chip.mid{background:rgba(217,119,6,.08);color:var(--yellow);border:1px solid rgba(217,119,6,.2)}
+.qa-score-chip.low{background:rgba(220,38,38,.08);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.qa-chevron{color:var(--muted);font-size:.7rem;transition:transform .2s}
+.qa-chevron.open{transform:rotate(180deg)}
+.qa-body{padding:0 20px 20px;display:none;border-top:1px solid var(--border)}
+.qa-body.open{display:block}
+.qa-section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:14px;margin-bottom:5px;font-weight:600}
+.qa-content{font-size:.85rem;line-height:1.6;color:var(--text)}
+.qa-feedback{font-size:.83rem;line-height:1.6;color:var(--muted);font-style:italic}
+
+/* spinner */
+.spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(37,99,235,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;color:var(--muted)}
+.loading-page p{font-size:.9rem}
+.error-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:12px;color:var(--muted);text-align:center}
+.error-page .ei{font-size:48px}
+.error-page h2{font-family:var(--head);font-size:1.2rem;font-weight:700;color:var(--text)}
+.error-page p{font-size:.88rem;max-width:340px;line-height:1.6}
+
 /* toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:.85rem;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.1);transition:transform .35s cubic-bezier(.16,1,.3,1);z-index:999;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}.toast.ok{border-color:rgba(22,163,74,.3)}.toast.err{border-color:rgba(220,38,38,.3)}
-.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}.toast.ok .dot{background:var(--green)}.toast.err .dot{background:var(--red)}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(37,99,235,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-indicator{display:flex;align-items:center;justify-content:center;gap:8px;padding:32px;color:var(--muted);font-size:.88rem}
+.tdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}.toast.ok .tdot{background:var(--green)}.toast.err .tdot{background:var(--red)}
 </style>
 </head>
 <body>
@@ -95,145 +113,242 @@ main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24p
   <div class="nav-logo"><div class="nav-logo-icon">🎙</div>Interview<span>AI</span></div>
   <div class="nav-right">
     <span class="nav-user">Hello, <span id="nav-user">—</span></span>
+    <button class="btn-sm" onclick="location.href='dashboard.html'">← Dashboard</button>
     <button class="btn-sm" onclick="logout()">Sign Out</button>
   </div>
 </nav>
 
-<main>
-  <div class="page-header">
-    <h1>Start an Interview</h1>
-    <p>Configure your session, then begin your AI-powered mock interview</p>
-  </div>
-
-  <div class="setup-grid">
-   
-    <div class="card">
-      <div class="card-title"><span class="badge">1</span> Select Role</div>
-      <div class="role-grid" id="role-grid">
-        <div class="role-card" onclick="selectRole(this,'Frontend Developer')"><div class="ri">💻</div><div class="rn">Frontend Dev</div></div>
-        <div class="role-card" onclick="selectRole(this,'Backend Developer')"><div class="ri">⚙️</div><div class="rn">Backend Dev</div></div>
-        <div class="role-card" onclick="selectRole(this,'Full Stack Developer')"><div class="ri">🔧</div><div class="rn">Full Stack</div></div>
-        <div class="role-card" onclick="selectRole(this,'Data Scientist')"><div class="ri">📊</div><div class="rn">Data Scientist</div></div>
-        <div class="role-card" onclick="selectRole(this,'Machine Learning Engineer')"><div class="ri">🤖</div><div class="rn">ML Engineer</div></div>
-        <div class="role-card" onclick="selectRole(this,'DevOps Engineer')"><div class="ri">🚀</div><div class="rn">DevOps</div></div>
-        <div class="role-card" onclick="selectRole(this,'System Design')"><div class="ri">🏗️</div><div class="rn">System Design</div></div>
-        <div class="role-card" onclick="selectRole(this,'Product Manager')"><div class="ri">📋</div><div class="rn">Product Mgr</div></div>
-      </div>
-    </div>
-
-
-    <div class="card">
-      <div class="card-title"><span class="badge">2</span> Difficulty Level</div>
-      <div class="level-row" style="margin-bottom:26px">
-        <button class="level-btn" onclick="selectLevel(this,'Junior')">🌱 Junior</button>
-        <button class="level-btn" onclick="selectLevel(this,'Mid-Level')">⚡ Mid-Level</button>
-        <button class="level-btn" onclick="selectLevel(this,'Senior')">🔥 Senior</button>
-      </div>
-
-      <div class="card-title"><span class="badge">3</span> OpenAI API Key</div>
-      <div class="api-key-wrap">
-        <input type="password" id="api-key" placeholder="sk-proj-...">
-        <button class="eye2" onclick="toggleKey()">👁</button>
-      </div>
-      <p class="api-note">Your key is sent directly to OpenAI and never stored on our servers. <a href="https://platform.openai.com/api-keys" target="_blank">Get your key →</a></p>
-    </div>
-  </div>
-
-  <button class="start-btn" id="start-btn" onclick="startInterview()" disabled>
-    <span class="sico">🎙</span> Start Mock Interview
-  </button>
-
- 
-  <div style="margin-top:48px">
-    <div class="section-title">📋 Interview History</div>
-    <div id="history-container">
-      <div class="loading-indicator"><span class="spin"></span> Loading history…</div>
-    </div>
+<main id="main-content">
+  <div class="loading-page" id="loading-view">
+    <span class="spin"></span>
+    <p>Loading your report…</p>
   </div>
 </main>
 
-<div class="toast" id="toast"><div class="dot"></div><span id="tmsg"></span></div>
+<div class="toast" id="toast"><div class="tdot"></div><span id="tmsg"></span></div>
 
 <script>
-const API='https://www.engineerpath.online/';
-let selectedRole='',selectedLevel='';
+const API = 'https://www.engineerpath.online';
+const token = localStorage.getItem('token');
+const username = localStorage.getItem('username');
+const interviewId = localStorage.getItem('report_interview_id');
 
-const token=localStorage.getItem('token');
-const username=localStorage.getItem('username');
-if(!token){location.href='index.html';}
-document.getElementById('nav-user').textContent=username||'User';
+if (!token) { location.href = 'index.html'; }
+if (!interviewId) { location.href = 'dashboard.html'; }
 
-function authHeaders(){return{'Content-Type':'application/json','Authorization':'Bearer '+token};}
+document.getElementById('nav-user').textContent = username || 'User';
 
-function toast(msg,type='ok'){const t=document.getElementById('toast');t.className='toast '+type;document.getElementById('tmsg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
-
-function selectRole(el,role){document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selectedRole=role;checkReady();}
-function selectLevel(el,level){document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selectedLevel=level;checkReady();}
-function checkReady(){
-  const key=document.getElementById('api-key').value.trim();
-  document.getElementById('start-btn').disabled=!(selectedRole&&selectedLevel&&key);
-}
-document.getElementById('api-key').addEventListener('input',checkReady);
-
-function toggleKey(){const i=document.getElementById('api-key');i.type=i.type==='password'?'text':'password';}
-
-function logout(){localStorage.clear();location.href='index.html';}
-
-async function startInterview(){
-  const key=document.getElementById('api-key').value.trim();
-  if(!key)return toast('Enter your OpenAI API key','err');
-  const btn=document.getElementById('start-btn');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Starting…';
-  try{
-    const r=await fetch(`${API}/interview/start`,{method:'POST',headers:authHeaders(),body:JSON.stringify({role:selectedRole,level:selectedLevel,api_key:key})});
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.detail||'Failed to start');
-    localStorage.setItem('interview_id',d.interview_id);
-    localStorage.setItem('first_question',d.question);
-    localStorage.setItem('interview_role',d.role);
-    localStorage.setItem('interview_level',d.level);
-    localStorage.setItem('api_key',key);
-    location.href='interview.html';
-  }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML='<span class="sico">🎙</span> Start Mock Interview';}
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
 }
 
-async function loadHistory(){
-  try{
-    const r=await fetch(`${API}/interview/history`,{headers:authHeaders()});
-    const data=await r.json();
-    const c=document.getElementById('history-container');
-    if(!data.length){c.innerHTML='<div class="empty-state"><div class="ei">🎙</div><p>No interviews yet. Start your first one above!</p></div>';return;}
-    c.innerHTML='<div class="history-list">'+data.map(iv=>{
-      const d=new Date(iv.created_at);
-      const dateStr=d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-      const timeStr=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-      const roleIcons={'Frontend Developer':'💻','Backend Developer':'⚙️','Full Stack Developer':'🔧','Data Scientist':'📊','Machine Learning Engineer':'🤖','DevOps Engineer':'🚀','System Design':'🏗️','Product Manager':'📋'};
-      const ico=roleIcons[iv.role]||'🎙';
-      const ended=iv.status==='ended';
-      return `<div class="hist-card" onclick="openReport(${iv.id},${ended})">
-        <div class="hist-left">
-          <div class="hist-icon">${ico}</div>
-          <div class="hist-info">
-            <div class="role">${iv.role}</div>
-            <div class="meta">${iv.level} · ${dateStr} at ${timeStr}</div>
+function toast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.className = 'toast ' + type;
+  document.getElementById('tmsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function logout() { localStorage.clear(); location.href = 'index.html'; }
+
+function scoreClass(s) {
+  if (s >= 70) return 'high';
+  if (s >= 45) return 'mid';
+  return 'low';
+}
+
+function scoreColor(s) {
+  if (s >= 70) return 'var(--green)';
+  if (s >= 45) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function parseBullets(str) {
+  if (!str) return [];
+  return str.split('|').map(s => s.trim()).filter(Boolean);
+}
+
+function toggleQA(idx) {
+  const body = document.getElementById('qa-body-' + idx);
+  const chev = document.getElementById('qa-chev-' + idx);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+
+function renderReport(report, responses, interviewMeta) {
+  const overall = Math.round(report.overall_score);
+  const tech = Math.round(report.technical_score);
+  const comm = Math.round(report.communication_score);
+  const pct = overall; // 0-100
+
+  const roleIcons = {
+    'Frontend Developer': '💻', 'Backend Developer': '⚙️', 'Full Stack Developer': '🔧',
+    'Data Scientist': '📊', 'Machine Learning Engineer': '🤖', 'DevOps Engineer': '🚀',
+    'System Design': '🏗️', 'Product Manager': '📋'
+  };
+  const ico = roleIcons[interviewMeta.role] || '🎙';
+
+  const createdAt = new Date(report.created_at);
+  const dateStr = createdAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const strengths = parseBullets(report.strengths);
+  const weaknesses = parseBullets(report.weaknesses);
+  const recommendations = parseBullets(report.recommendations);
+
+  // Build Q&A HTML
+  let qaHTML = '';
+  if (responses && responses.length) {
+    responses.forEach((r, i) => {
+      const s = r.score != null ? r.score : null;
+      const pctScore = s != null ? Math.round(s * 10) : null;
+      const chipClass = pctScore != null ? scoreClass(pctScore) : 'mid';
+      const chipLabel = s != null ? `${s.toFixed(1)}/10` : 'N/A';
+      const qShort = (r.question || '').length > 80 ? r.question.slice(0, 80) + '…' : (r.question || '');
+      qaHTML += `
+        <div class="qa-item">
+          <div class="qa-header" onclick="toggleQA(${i})">
+            <div class="qa-header-left">
+              <div class="qa-num">${i + 1}</div>
+              <div class="qa-q-preview">${escHtml(qShort)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="qa-score-chip ${chipClass}">${chipLabel}</span>
+              <span class="qa-chevron" id="qa-chev-${i}">▾</span>
+            </div>
+          </div>
+          <div class="qa-body" id="qa-body-${i}">
+            <div class="qa-section-label">Question</div>
+            <div class="qa-content">${escHtml(r.question || '')}</div>
+            <div class="qa-section-label">Your Answer</div>
+            <div class="qa-content">${escHtml(r.answer || '')}</div>
+            ${r.feedback ? `<div class="qa-section-label">Feedback</div><div class="qa-feedback">${escHtml(r.feedback)}</div>` : ''}
+          </div>
+        </div>`;
+    });
+  }
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="page-header">
+      <h1>Interview Report</h1>
+      <p>${interviewMeta.role} · ${interviewMeta.level} · ${dateStr}</p>
+    </div>
+
+    <!-- Score Hero -->
+    <div class="score-hero">
+      <div class="overall-circle" style="--pct:${pct}">
+        <div class="overall-inner">
+          <div class="overall-num" style="color:${scoreColor(pct)}">${overall}</div>
+          <div class="overall-label">Overall</div>
+        </div>
+      </div>
+      <div class="score-meta">
+        <div class="role-tag">${ico} ${interviewMeta.role}</div>
+        <h2>${interviewMeta.level} Level Interview</h2>
+        <div class="date-tag">Completed on ${dateStr} · ${responses ? responses.length : 0} questions answered</div>
+        <div class="sub-scores">
+          <div class="sub-score">
+            <div class="sub-score-label">Technical</div>
+            <div class="sub-score-val" style="color:${scoreColor(tech)}">${tech}<span style="font-size:.7rem;color:var(--muted);font-weight:400">/100</span></div>
+            <div class="sub-score-bar"><div class="sub-score-bar-fill" style="width:${tech}%;background:${scoreColor(tech)}"></div></div>
+          </div>
+          <div class="sub-score">
+            <div class="sub-score-label">Communication</div>
+            <div class="sub-score-val" style="color:${scoreColor(comm)}">${comm}<span style="font-size:.7rem;color:var(--muted);font-weight:400">/100</span></div>
+            <div class="sub-score-bar"><div class="sub-score-bar-fill" style="width:${comm}%;background:${scoreColor(comm)}"></div></div>
           </div>
         </div>
-        <div class="hist-right">
-          <div class="status-dot ${iv.status}"></div>
-          ${ended?'<span class="score-badge high">View Report</span>':'<span class="score-badge mid">In Progress</span>'}
-        </div>
-      </div>`;
-    }).join('')+'</div>';
-  }catch(e){document.getElementById('history-container').innerHTML='<p style="color:var(--muted);font-size:.88rem;padding:16px">Could not load history.</p>';}
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-card">
+      <div class="card-title"><span class="ico">📝</span> Summary</div>
+      <div class="summary-text">${escHtml(report.summary || 'No summary available.')}</div>
+    </div>
+
+    <!-- Strengths / Weaknesses / Recommendations -->
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title" style="color:var(--green)"><span class="ico">✅</span> Strengths</div>
+        <ul class="bullet-list strengths-list">
+          ${strengths.length ? strengths.map(s => `<li>${escHtml(s)}</li>`).join('') : '<li>No data</li>'}
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--red)"><span class="ico">⚠️</span> Areas to Improve</div>
+        <ul class="bullet-list weaknesses-list">
+          ${weaknesses.length ? weaknesses.map(s => `<li>${escHtml(s)}</li>`).join('') : '<li>No data</li>'}
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:28px">
+      <div class="card-title" style="color:var(--accent)"><span class="ico">💡</span> Recommendations</div>
+      <ul class="bullet-list recs-list">
+        ${recommendations.length ? recommendations.map(s => `<li>${escHtml(s)}</li>`).join('') : '<li>No data</li>'}
+      </ul>
+    </div>
+
+    <!-- Q&A Transcript -->
+    ${qaHTML ? `
+    <div class="qa-section">
+      <div class="qa-title">🗂 Question-by-Question Breakdown <span style="font-size:.75rem;font-weight:400;color:var(--muted)">(click to expand)</span></div>
+      <div class="qa-list">${qaHTML}</div>
+    </div>` : ''}
+
+    <div style="margin-top:32px;text-align:center">
+      <button class="btn-accent" onclick="location.href='dashboard.html'" style="padding:12px 28px;font-size:.9rem;border-radius:10px">
+        ← Back to Dashboard
+      </button>
+    </div>
+  `;
 }
 
-function openReport(id,ended){
-  if(!ended)return toast('Interview still in progress','err');
-  localStorage.setItem('report_interview_id',id);
-  location.href='report.html';
+function escHtml(str) {
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-loadHistory();
+function showError(title, msg) {
+  document.getElementById('main-content').innerHTML = `
+    <div class="error-page">
+      <div class="ei">😕</div>
+      <h2>${title}</h2>
+      <p>${msg}</p>
+      <button class="btn-accent" onclick="location.href='dashboard.html'" style="margin-top:8px;padding:10px 24px;border-radius:8px">← Back to Dashboard</button>
+    </div>`;
+}
+
+async function loadReport() {
+  try {
+    // Fetch report, responses, and history in parallel
+    const [reportRes, responsesRes, historyRes] = await Promise.all([
+      fetch(`${API}/interview/report/${interviewId}`, { headers: authHeaders() }),
+      fetch(`${API}/interview/responses/${interviewId}`, { headers: authHeaders() }),
+      fetch(`${API}/interview/history`, { headers: authHeaders() })
+    ]);
+
+    if (reportRes.status === 404) {
+      showError('Report Not Found', 'This interview report has not been generated yet, or may still be processing. Please go back and try again shortly.');
+      return;
+    }
+    if (!reportRes.ok) {
+      const err = await reportRes.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to load report');
+    }
+
+    const report = await reportRes.json();
+    const responses = responsesRes.ok ? await responsesRes.json() : [];
+    const history = historyRes.ok ? await historyRes.json() : [];
+    const interviewMeta = history.find(iv => String(iv.id) === String(interviewId)) || { role: '—', level: '—' };
+
+    renderReport(report, responses, interviewMeta);
+  } catch (e) {
+    showError('Could Not Load Report', e.message || 'An unexpected error occurred. Please try again.');
+  }
+}
+
+loadReport();
 </script>
 </body>
 </html>
