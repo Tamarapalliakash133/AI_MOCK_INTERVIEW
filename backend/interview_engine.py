@@ -25,7 +25,7 @@ Evaluate the candidate's answer and return ONLY valid JSON — no markdown, no e
 
 
 def _llm(api_key: str, temperature: float = 0.7):
-    return ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=temperature, openai_api_key=api_key)
+    return ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=temperature, google_api_key=api_key)
 
 
 def generate_first_question(role: str, level: str, api_key: str) -> str:
