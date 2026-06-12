@@ -12,3 +12,4 @@ langchain-openai
 openai
 pydantic
 python-multipart
+langchain-google-genai
