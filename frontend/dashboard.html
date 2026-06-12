@@ -130,12 +130,12 @@ main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24p
         <button class="level-btn" onclick="selectLevel(this,'Senior')">🔥 Senior</button>
       </div>
 
-      <div class="card-title"><span class="badge">3</span> OpenAI API Key</div>
+      <div class="card-title"><span class="badge">3</span> Google AI API Key</div>
       <div class="api-key-wrap">
-        <input type="password" id="api-key" placeholder="sk-proj-...">
+        <input type="password" id="api-key" placeholder="AIza...">
         <button class="eye2" onclick="toggleKey()">👁</button>
       </div>
-      <p class="api-note">Your key is sent directly to OpenAI and never stored on our servers. <a href="https://platform.openai.com/api-keys" target="_blank">Get your key →</a></p>
+      <p class="api-note">Your key is used to power the AI interviewer (Gemini) and is never stored on our servers. <a href="https://aistudio.google.com/app/apikey" target="_blank">Get your key →</a></p>
     </div>
   </div>
 
@@ -155,7 +155,7 @@ main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24p
 <div class="toast" id="toast"><div class="dot"></div><span id="tmsg"></span></div>
 
 <script>
-const API='https://ai-mock-interview-8.onrender.com';
+const API='https://www.engineerpath.online';
 let selectedRole='',selectedLevel='';
 
 
