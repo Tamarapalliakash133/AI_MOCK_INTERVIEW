@@ -1,8 +1,8 @@
 """
-Interview Engine — uses LangChain + OpenAI (langchain_openai)
+Interview Engine — uses LangChain + Google Gemini (langchain_google_genai)
 Handles: question generation, answer evaluation, report generation
 """
-import json
+import json, re
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
 
@@ -24,8 +24,30 @@ Evaluate the candidate's answer and return ONLY valid JSON — no markdown, no e
 """
 
 
-def _llm(api_key: str, temperature: float = 0.7):
-    return ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=temperature, google_api_key=api_key)
+def _llm(api_key: str, temperature: float = 0.7, json_mode: bool = False):
+    """
+    For JSON-output calls (json_mode=True) we disable Gemini 2.5 Flash's
+    built-in thinking budget, which otherwise wraps responses in markdown
+    fences and breaks json.loads().
+    """
+    kwargs = dict(
+        model="gemini-2.5-flash",
+        temperature=temperature,
+        google_api_key=api_key,
+    )
+    if json_mode:
+        # Disable thinking so the model returns clean JSON without ```json fences
+        kwargs["thinking_budget"] = 0
+    return ChatGoogleGenerativeAI(**kwargs)
+
+
+def _strip_json(raw: str) -> str:
+    """Remove markdown code fences if present, then strip whitespace."""
+    raw = raw.strip()
+    # Remove ```json ... ``` or ``` ... ```
+    raw = re.sub(r"^```(?:json)?\s*", "", raw)
+    raw = re.sub(r"\s*```$", "", raw)
+    return raw.strip()
 
 
 def generate_first_question(role: str, level: str, api_key: str) -> str:
@@ -76,7 +98,7 @@ def evaluate_answer(question: str, answer: str, role: str, level: str, api_key: 
     """
     Returns: {score: float, feedback: str, technical_accuracy: str, communication: str}
     """
-    llm = _llm(api_key, temperature=0.3)
+    llm = _llm(api_key, temperature=0.3, json_mode=True)
     messages = [
         SystemMessage(content=SYSTEM_EVALUATOR),
         HumanMessage(content=f"""
@@ -96,7 +118,7 @@ Evaluate and return ONLY this JSON (no backticks):
     ]
     raw = llm.invoke(messages).content.strip()
     try:
-        return json.loads(raw)
+        return json.loads(_strip_json(raw))
     except Exception:
         return {"score": 5.0, "feedback": raw, "technical_accuracy": "fair", "communication": "fair"}
 
@@ -106,7 +128,7 @@ def generate_report(role: str, level: str, responses: list, api_key: str) -> dic
     responses: list of {question, answer, score, feedback}
     Returns full report dict
     """
-    llm = _llm(api_key, temperature=0.4)
+    llm = _llm(api_key, temperature=0.4, json_mode=True)
     qa_text = "\n\n".join([
         f"Q{i+1}: {r['question']}\nA: {r['answer']}\nScore: {r.get('score',0)}/10\nFeedback: {r.get('feedback','')}"
         for i, r in enumerate(responses)
@@ -138,12 +160,13 @@ Generate a comprehensive performance report. Return ONLY this JSON (no backticks
     ]
     raw = llm.invoke(messages).content.strip()
     try:
-        return json.loads(raw)
+        return json.loads(_strip_json(raw))
     except Exception:
+        avg_scaled = avg_score * 10
         return {
-            "technical_score": avg_score * 10,
-            "communication_score": avg_score * 10,
-            "overall_score": avg_score * 10,
+            "technical_score": avg_scaled,
+            "communication_score": avg_scaled,
+            "overall_score": avg_scaled,
             "strengths": "Shows effort|Attempted all questions",
             "weaknesses": "Needs more depth|Review core concepts",
             "recommendations": "Practice more|Study fundamentals",
