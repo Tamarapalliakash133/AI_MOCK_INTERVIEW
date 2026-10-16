@@ -203,7 +203,25 @@ textarea::placeholder{color:#b0bac9}
 <div class="toast" id="toast"><div class="dot"></div><span id="tmsg"></span></div>
 
 <script>
-const API='https://www.engineerpath.online';
+const API='http://127.0.0.1:8000';
+// Wraps fetch with a timeout so a stuck/unreachable backend shows a clear
+// error instead of leaving the UI spinning forever, and logs the raw error
+// to the console so it's visible in DevTools.
+async function apiCall(url, opts={}, timeoutMs=15000){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),timeoutMs);
+  try{
+    const r=await fetch(url,{...opts,signal:ctrl.signal});
+    return r;
+  }catch(err){
+    console.error('Request failed:',url,err);
+    if(err.name==='AbortError') throw new Error('Request timed out — is the backend running at '+API+'?');
+    throw new Error('Network error — is the backend running at '+API+'? ('+err.message+')');
+  }finally{
+    clearTimeout(t);
+  }
+}
+
 const token=localStorage.getItem('token');
 const interviewId=parseInt(localStorage.getItem('interview_id'));
 const firstQuestion=localStorage.getItem('first_question');
@@ -427,7 +445,7 @@ async function sendAnswer(){
   document.getElementById('ai-state').textContent='Thinking…';
 
   try{
-    const r=await fetch(`${API}/interview/answer`,{method:'POST',headers:authHdr(),body:JSON.stringify({interview_id:interviewId,answer,api_key:apiKey})});
+    const r=await apiCall(`${API}/interview/answer`,{method:'POST',headers:authHdr(),body:JSON.stringify({interview_id:interviewId,answer,api_key:apiKey})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.detail||'Error');
     removeTyping();
@@ -440,7 +458,7 @@ async function sendAnswer(){
     qCount++; document.getElementById('q-num').textContent=qCount;
     addMsg('ai',d.next_question);
     speak(d.next_question);
-  }catch(e){ removeTyping(); toast(e.message,'err'); }
+  }catch(e){ console.error('submit answer error:',e); removeTyping(); toast(e.message,'err'); }
   finally{
     awaitingAnswer=false;
     sendBtn.disabled=false;
@@ -464,14 +482,14 @@ async function endInterview(){
   const btn=document.getElementById('confirm-end-btn');
   btn.disabled=true;btn.textContent='Generating report…';
   try{
-    const r=await fetch(`${API}/interview/end`,{method:'POST',headers:authHdr(),body:JSON.stringify({interview_id:interviewId,api_key:apiKey})});
+    const r=await apiCall(`${API}/interview/end`,{method:'POST',headers:authHdr(),body:JSON.stringify({interview_id:interviewId,api_key:apiKey})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.detail||'Failed to end');
     clearInterval(timerInterval);
     if(stream)stream.getTracks().forEach(t=>t.stop());
     localStorage.setItem('report_interview_id',interviewId);
     location.href='report.html';
-  }catch(e){toast(e.message,'err');btn.disabled=false;btn.textContent='End & Get Report';}
+  }catch(e){console.error('end interview error:',e);toast(e.message,'err');btn.disabled=false;btn.textContent='End & Get Report';}
 }
 
 

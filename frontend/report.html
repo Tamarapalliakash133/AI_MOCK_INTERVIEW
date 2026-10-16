@@ -128,7 +128,25 @@ main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:40px 24px
 <div class="toast" id="toast"><div class="tdot"></div><span id="tmsg"></span></div>
 
 <script>
-const API = 'https://www.engineerpath.online';
+const API = 'http://127.0.0.1:8000';
+// Wraps fetch with a timeout so a stuck/unreachable backend shows a clear
+// error instead of leaving the UI spinning forever, and logs the raw error
+// to the console so it's visible in DevTools.
+async function apiCall(url, opts={}, timeoutMs=15000){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),timeoutMs);
+  try{
+    const r=await fetch(url,{...opts,signal:ctrl.signal});
+    return r;
+  }catch(err){
+    console.error('Request failed:',url,err);
+    if(err.name==='AbortError') throw new Error('Request timed out — is the backend running at '+API+'?');
+    throw new Error('Network error — is the backend running at '+API+'? ('+err.message+')');
+  }finally{
+    clearTimeout(t);
+  }
+}
+
 const token = localStorage.getItem('token');
 const username = localStorage.getItem('username');
 const interviewId = localStorage.getItem('report_interview_id');
@@ -323,9 +341,9 @@ async function loadReport() {
   try {
     // Fetch report, responses, and history in parallel
     const [reportRes, responsesRes, historyRes] = await Promise.all([
-      fetch(`${API}/interview/report/${interviewId}`, { headers: authHeaders() }),
-      fetch(`${API}/interview/responses/${interviewId}`, { headers: authHeaders() }),
-      fetch(`${API}/interview/history`, { headers: authHeaders() })
+      apiCall(`${API}/interview/report/${interviewId}`, { headers: authHeaders() }),
+      apiCall(`${API}/interview/responses/${interviewId}`, { headers: authHeaders() }),
+      apiCall(`${API}/interview/history`, { headers: authHeaders() })
     ]);
 
     if (reportRes.status === 404) {

@@ -130,12 +130,12 @@ main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24p
         <button class="level-btn" onclick="selectLevel(this,'Senior')">🔥 Senior</button>
       </div>
 
-      <div class="card-title"><span class="badge">3</span> Google AI API Key</div>
+      <div class="card-title"><span class="badge">3</span> OpenAI API Key</div>
       <div class="api-key-wrap">
-        <input type="password" id="api-key" placeholder="AIza...">
+        <input type="password" id="api-key" placeholder="sk-...">
         <button class="eye2" onclick="toggleKey()">👁</button>
       </div>
-      <p class="api-note">Your key is used to power the AI interviewer (Gemini) and is never stored on our servers. <a href="https://aistudio.google.com/app/apikey" target="_blank">Get your key →</a></p>
+      <p class="api-note">Your key is used to power the AI interviewer (OpenAI) and is never stored on our servers. <a href="https://platform.openai.com/api-keys" target="_blank">Get your key →</a></p>
     </div>
   </div>
 
@@ -155,8 +155,26 @@ main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24p
 <div class="toast" id="toast"><div class="dot"></div><span id="tmsg"></span></div>
 
 <script>
-const API='https://www.engineerpath.online';
+const API='http://127.0.0.1:8000';
 let selectedRole='',selectedLevel='';
+// Wraps fetch with a timeout so a stuck/unreachable backend shows a clear
+// error instead of leaving the UI spinning forever, and logs the raw error
+// to the console so it's visible in DevTools.
+async function apiCall(url, opts={}, timeoutMs=15000){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),timeoutMs);
+  try{
+    const r=await fetch(url,{...opts,signal:ctrl.signal});
+    return r;
+  }catch(err){
+    console.error('Request failed:',url,err);
+    if(err.name==='AbortError') throw new Error('Request timed out — is the backend running at '+API+'?');
+    throw new Error('Network error — is the backend running at '+API+'? ('+err.message+')');
+  }finally{
+    clearTimeout(t);
+  }
+}
+
 
 
 const token=localStorage.getItem('token');
@@ -186,7 +204,7 @@ async function startInterview(){
   const btn=document.getElementById('start-btn');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span> Starting…';
   try{
-    const r=await fetch(`${API}/interview/start`,{method:'POST',headers:authHeaders(),body:JSON.stringify({role:selectedRole,level:selectedLevel,api_key:key})});
+    const r=await apiCall(`${API}/interview/start`,{method:'POST',headers:authHeaders(),body:JSON.stringify({role:selectedRole,level:selectedLevel,api_key:key})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.detail||'Failed to start');
     localStorage.setItem('interview_id',d.interview_id);
@@ -195,12 +213,12 @@ async function startInterview(){
     localStorage.setItem('interview_level',d.level);
     localStorage.setItem('api_key',key);
     location.href='interview.html';
-  }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML='<span class="sico">🎙</span> Start Mock Interview';}
+  }catch(e){console.error('start interview error:',e);toast(e.message,'err');btn.disabled=false;btn.innerHTML='<span class="sico">🎙</span> Start Mock Interview';}
 }
 
 async function loadHistory(){
   try{
-    const r=await fetch(`${API}/interview/history`,{headers:authHeaders()});
+    const r=await apiCall(`${API}/interview/history`,{headers:authHeaders()});
     const data=await r.json();
     const c=document.getElementById('history-container');
     if(!data.length){c.innerHTML='<div class="empty-state"><div class="ei">🎙</div><p>No interviews yet. Start your first one above!</p></div>';return;}
@@ -225,7 +243,7 @@ async function loadHistory(){
         </div>
       </div>`;
     }).join('')+'</div>';
-  }catch(e){document.getElementById('history-container').innerHTML='<p style="color:var(--muted);font-size:.88rem;padding:16px">Could not load history.</p>';}
+  }catch(e){console.error('load history error:',e);document.getElementById('history-container').innerHTML='<p style="color:var(--muted);font-size:.88rem;padding:16px">Could not load history.</p>';}
 }
 
 function openReport(id,ended){

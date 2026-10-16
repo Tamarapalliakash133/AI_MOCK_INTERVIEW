@@ -55,8 +55,8 @@ def send_otp(db: Session, req: SendOTPSchema):
     db.add(OTPRecord(phone=req.phone, otp_code=otp))
     db.commit()
     try:
-        client = TwilioClient(os.getenv("TWILIO_ACCOUNT_SID"), os.getenv("TWILIO_AUTH_TOKEN"))
-        client.messages.create(body=f"Your InterviewAI OTP: {otp}. Valid 10 mins.", from_=os.getenv("TWILIO_PHONE_NUMBER"), to=req.phone)
+        client = TwilioClient(os.getenv("TWILIO_SID"), os.getenv("TWILIO_AUTH_TOKEN"))
+        client.messages.create(body=f"Your InterviewAI OTP: {otp}. Valid 10 mins.", from_=os.getenv("TWILIO_NUMBER"), to=req.phone)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"SMS error: {e}")
     return {"message": "OTP sent"}

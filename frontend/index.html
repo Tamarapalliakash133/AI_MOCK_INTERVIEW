@@ -163,8 +163,26 @@ input::placeholder{color:#2d3545}
 <div class="toast" id="toast"><div class="dot"></div><span id="tmsg"></span></div>
 
 <script>
-const API='https://www.engineerpath.online';
+const API='http://127.0.0.1:8000';
 let sPhone='',sOTP='',cdTimer;
+
+// Wraps fetch with a timeout so a stuck/unreachable backend shows a clear
+// error instead of leaving the button spinning forever, and logs the raw
+// error to the console so it's visible in DevTools.
+async function apiCall(url, opts={}, timeoutMs=15000){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),timeoutMs);
+  try{
+    const r=await fetch(url,{...opts,signal:ctrl.signal});
+    return r;
+  }catch(err){
+    console.error('Request failed:',url,err);
+    if(err.name==='AbortError') throw new Error('Request timed out — is the backend running at '+API+'?');
+    throw new Error('Network error — is the backend running at '+API+'? ('+err.message+')');
+  }finally{
+    clearTimeout(t);
+  }
+}
 
 function switchTab(t){
   document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1)));
@@ -186,13 +204,13 @@ async function doLogin(){
   if(!u||!p)return toast('Fill in all fields','err');
   setBtn('login-btn',true);
   try{
-    const r=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const r=await apiCall(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.detail||'Login failed');
     localStorage.setItem('token',d.token);localStorage.setItem('username',d.username);localStorage.setItem('user_id',d.user_id);
     toast('Signed in! Redirecting…');
     setTimeout(()=>location.href='dashboard.html',1000);
-  }catch(e){toast(e.message,'err');}
+  }catch(e){console.error('login error:',e);toast(e.message,'err');}
   finally{setBtn('login-btn',false,'Sign In');}
 }
 
@@ -202,11 +220,11 @@ async function doRegister(){
   if(p.length<8)return toast('Password min 8 characters','err');
   setBtn('reg-btn',true);
   try{
-    const r=await fetch(`${API}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:e,password:p,phone:ph||null})});
+    const r=await apiCall(`${API}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:e,password:p,phone:ph||null})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.detail||'Registration failed');
     toast('Account created! Sign in now.');switchTab('login');
-  }catch(e){toast(e.message,'err');}
+  }catch(e){console.error('register error:',e);toast(e.message,'err');}
   finally{setBtn('reg-btn',false,'Create Account');}
 }
 
@@ -215,14 +233,14 @@ async function doSendOTP(resend=false){
   if(!ph)return toast('Enter your phone number','err');
   sPhone=ph;setBtn('otp-btn',true);
   try{
-    const r=await fetch(`${API}/auth/forgot-password/send-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:ph})});
+    const r=await apiCall(`${API}/auth/forgot-password/send-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:ph})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.detail||'Failed to send OTP');
     toast('OTP sent!');
     document.getElementById('f1').style.display='none';document.getElementById('f2').style.display='block';
     document.getElementById('masked').textContent=ph.replace(/(\+?\d{2,3})\d+(\d{4})/,'$1****$2');
     startCD(60);
-  }catch(e){toast(e.message,'err');}
+  }catch(e){console.error('send-otp error:',e);toast(e.message,'err');}
   finally{setBtn('otp-btn',false,'Send OTP');}
 }
 
@@ -236,11 +254,11 @@ async function doReset(){
   if(np!==cp)return toast('Passwords do not match','err');
   setBtn('reset-btn',true);
   try{
-    const r=await fetch(`${API}/auth/forgot-password/verify-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:sPhone,otp_code:sOTP,new_password:np})});
+    const r=await apiCall(`${API}/auth/forgot-password/verify-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:sPhone,otp_code:sOTP,new_password:np})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.detail||'Reset failed');
     document.getElementById('f3').style.display='none';document.getElementById('f-ok').style.display='block';
-  }catch(e){toast(e.message,'err');document.getElementById('f3').style.display='none';document.getElementById('f2').style.display='block';}
+  }catch(e){console.error('reset error:',e);toast(e.message,'err');document.getElementById('f3').style.display='none';document.getElementById('f2').style.display='block';}
   finally{setBtn('reset-btn',false,'Reset Password');}
 }
 
