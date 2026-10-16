@@ -13,3 +13,4 @@ openai
 pydantic
 python-multipart
 langchain-google-genai
+psycopg2-binary
