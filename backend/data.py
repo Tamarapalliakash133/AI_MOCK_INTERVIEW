@@ -7,9 +7,9 @@ load_dotenv()
 
 SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./interviewai.db")
 
-if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+if SQLALCHEMY_DATABASE_URL.startswith("postgresql://"):
     SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace(
-        "postgres://", "postgresql://", 1
+        "postgresql://", "postgresql+psycopg2://", 1
     )
 
 is_sqlite = SQLALCHEMY_DATABASE_URL.startswith("sqlite")
